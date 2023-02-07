@@ -1,0 +1,41 @@
+syntax = "proto3";
+option go_package = "grpc/grpc";
+
+// The company domain model
+message Company {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  optional string password = 4; // never return
+}
+
+// The Company service definition.
+service CompanyHandler {
+  rpc ListCompanies (CompanyRequest) returns (ListCompanyReply) {}
+  rpc GetCompany (CompanyRequest) returns (CompanyReply) {}
+  rpc CreateCompany (CompanyRequest) returns (MsgReply) {}
+  rpc UpdateCompany (CompanyRequest) returns (CompanyReply) {}
+  rpc DeleteCompany (CompanyRequest) returns (MsgReply) {}
+}
+
+// The request message containing the company's name.
+message CompanyRequest {
+  optional int64 id = 1;
+  optional string name = 2;
+}
+
+message CompanyReply {
+  string message = 1;
+  Company company = 2;
+}
+
+message MsgReply {
+  string message = 1;
+  optional int64 id = 2;
+}
+
+// The response message containing the greetings
+message ListCompanyReply {
+  string message = 1;
+  repeated Company companies = 2;
+}
