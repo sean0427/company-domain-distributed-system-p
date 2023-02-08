@@ -56,7 +56,7 @@ func (g *GrpcService) ListCompanies(ctx context.Context, req *pb.CompanyRequest)
 
 func (g *GrpcService) GetCompany(ctx context.Context, req *pb.CompanyRequest) (*pb.CompanyReply, error) {
 	if req.Id == nil || *req.Id < 0 {
-		return nil, status.Error(codes.InvalidArgument, "input id shuld not be nil")
+		return nil, status.Error(codes.InvalidArgument, "input id should not be nil")
 	}
 
 	res, err := g.service.GetByID(ctx, *req.Id)
@@ -73,7 +73,7 @@ func (g *GrpcService) GetCompany(ctx context.Context, req *pb.CompanyRequest) (*
 
 func (g *GrpcService) CreateCompany(ctx context.Context, req *pb.CompanyRequest) (*pb.MsgReply, error) {
 	if req.Id != nil {
-		return nil, status.Error(codes.InvalidArgument, "input id shuld be nil")
+		return nil, status.Error(codes.InvalidArgument, "input id should be nil")
 	}
 	if req.Name == nil || *req.Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "input name should not be nil")
@@ -94,7 +94,7 @@ func (g *GrpcService) CreateCompany(ctx context.Context, req *pb.CompanyRequest)
 
 func (g *GrpcService) UpdateCompany(ctx context.Context, req *pb.CompanyRequest) (*pb.CompanyReply, error) {
 	if req.Id == nil || *req.Id < 0 {
-		return nil, status.Error(codes.InvalidArgument, "input id shuld not be nil")
+		return nil, status.Error(codes.InvalidArgument, "input id should not be nil")
 	}
 
 	company := &api_model.UpdateCompanyParams{}
@@ -116,7 +116,7 @@ func (g *GrpcService) UpdateCompany(ctx context.Context, req *pb.CompanyRequest)
 
 func (g *GrpcService) DeleteCompany(ctx context.Context, req *pb.CompanyRequest) (*pb.MsgReply, error) {
 	if req.Id == nil || *req.Id < 0 {
-		return nil, status.Error(codes.InvalidArgument, "input id shuld not be nil")
+		return nil, status.Error(codes.InvalidArgument, "input id should not be nil")
 	}
 
 	err := g.service.Delete(ctx, *req.Id)

@@ -2,11 +2,20 @@ syntax = "proto3";
 option go_package = "grpc/grpc";
 
 // The company domain model
+import "google/protobuf/timestamp.proto";
+
 message Company {
   int64 id = 1;
   string name = 2;
   string email = 3;
-  optional string password = 4; // never return
+  string address = 4;
+  string contact = 6;
+  
+  string createBy = 7;
+  string updateBy = 8;
+
+  google.protobuf.Timestamp   created = 9;
+  google.protobuf.Timestamp   updated = 10; 
 }
 
 // The Company service definition.

@@ -5,16 +5,18 @@ type GetCompaniesParams struct {
 }
 
 type CreateCompanyParams struct {
-	Name     string
-	Email    string
-	Password string
+	Name    string
+	Email   string
+	Address string
+	Contact string
 }
 
 type UpdateCompanyParams struct {
-	ID       int64
-	Name     string
-	Email    string
-	Password string
+	ID      int64
+	Name    string
+	Email   string
+	Address string
+	Contact string
 }
 
 func StringToPointer(s string) *string {
@@ -24,3 +26,5 @@ func StringToPointer(s string) *string {
 func Int64ToPointer(i int64) *int64 {
 	return &i
 }
+
+type CtxKey string

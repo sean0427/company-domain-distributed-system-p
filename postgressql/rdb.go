@@ -20,6 +20,15 @@ func New(db *gorm.DB) *repository {
 	}
 }
 
+func getUserFromContext(ctx context.Context) (string, error) {
+	user := ctx.Value("user")
+	if user == nil {
+		return "default", nil // TODO
+	}
+
+	return user.(string), nil
+}
+
 func (r *repository) Get(ctx context.Context, params *api_model.GetCompaniesParams) ([]*model.Company, error) {
 	var companies []*model.Company
 	tx := r.db.WithContext(ctx)
@@ -42,36 +51,53 @@ func (r *repository) GetByID(ctx context.Context, id int64) (*model.Company, err
 }
 
 func (r *repository) Create(ctx context.Context, params *api_model.CreateCompanyParams) (int64, error) {
+	user, _ := getUserFromContext(ctx)
 	company := model.Company{
-		Name:     params.Name,
-		Email:    params.Email,
-		Password: params.Password,
+		Name:      params.Name,
+		Email:     params.Email,
+		Address:   params.Address,
+		Contact:   params.Contact,
+		UpdatedBy: user,
+		CreatedBy: user,
 	}
 
-	tx := r.db.WithContext(ctx)
-	result := tx.Model(&company).Create(&company)
-	if result.Error != nil {
-		return 0, result.Error
+	err := TransactionWithOutboxMsg(ctx, r.db, &company, func(tx *gorm.DB) error {
+		result := tx.Model(&company).Create(&company)
+		if result.Error != nil {
+			return result.Error
+		}
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
 	}
 
 	return company.ID, nil
 }
 
 func (r *repository) Update(ctx context.Context, id int64, params *api_model.UpdateCompanyParams) (*model.Company, error) {
+	user, _ := getUserFromContext(ctx)
 	company := model.Company{
-		ID:       id,
-		Name:     params.Name,
-		Email:    params.Email,
-		Password: params.Password,
+		ID:        id,
+		Name:      params.Name,
+		Email:     params.Email,
+		Address:   params.Address,
+		Contact:   params.Contact,
+		UpdatedBy: user,
 	}
-	tx := r.db.WithContext(ctx)
-
-	result := tx.Model(&company).Where("id = ?", params.ID).Save(&company)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	if result.RowsAffected == 0 {
-		return nil, errors.New("not found")
+	err := TransactionWithOutboxMsg(ctx, r.db, &company, func(tx *gorm.DB) error {
+		result := tx.Model(&company).Where("id = ?", params.ID).Save(&company)
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected == 0 {
+			return errors.New("not found")
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return &company, nil
@@ -89,19 +115,4 @@ func (r *repository) Delete(ctx context.Context, id int64) error {
 	}
 
 	return nil
-}
-
-func (r *repository) ExamCompanyPassword(ctx context.Context, name, password string) (bool, error) {
-	tx := r.db.WithContext(ctx)
-
-	var count int64
-	result := tx.Model(&model.Company{}).
-		Where("name =? and password=?", name, password).
-		Count(&count)
-
-	if count == 1 {
-		return true, nil
-	}
-
-	return false, result.Error
 }

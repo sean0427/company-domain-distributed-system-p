@@ -1,5 +1,7 @@
 package postgressql
 
+// Actually functional testing, using in memory database to testing.
+
 import (
 	"context"
 	"os"
@@ -133,19 +135,23 @@ func Test_repository_GetByID(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			createRandomCompanyToDB(c.testCount)
 			repo := repository{db: testingDB}
-
-			prodct, err := repo.GetByID(context.Background(), c.id)
+			ctx := context.WithValue(context.Background(), api_model.CtxKey("user"), "aa")
+			company, err := repo.GetByID(ctx, c.id)
 
 			if err != nil && !c.wantError {
 				t.Errorf("got error %v", err)
 				return
 			}
 
-			if prodct.ID == c.id {
-				t.Errorf("Expected %d, got %d", c.id, prodct.ID)
+			if company.ID == c.id {
+				t.Errorf("Expected %d, got %d", c.id, company.ID)
 			}
 		})
 	}
+}
+
+func CtxKey(s string) {
+	panic("unimplemented")
 }
 
 func Test_repository_Create(t *testing.T) {
@@ -158,9 +164,9 @@ func Test_repository_Create(t *testing.T) {
 		{
 			name: "happy",
 			params: &api_model.CreateCompanyParams{
-				Name:     "test",
-				Email:    "test@test.com",
-				Password: "featea",
+				Name:    "test",
+				Email:   "test@test.com",
+				Contact: "featea",
 			},
 			want:    1,
 			wantErr: false,
@@ -177,7 +183,9 @@ func Test_repository_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := repository{db: testingDB}
-			got, err := r.Create(context.Background(), tt.params)
+			ctx := context.WithValue(context.Background(), api_model.CtxKey("user"), "aa")
+
+			got, err := r.Create(ctx, tt.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("repository.Create() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -211,7 +219,9 @@ func Test_repository_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &repository{db: testingDB}
-			if err := r.Delete(context.Background(), tt.id); (err != nil) != tt.wantErr {
+
+			ctx := context.WithValue(context.Background(), api_model.CtxKey("user"), "aa")
+			if err := r.Delete(ctx, tt.id); (err != nil) != tt.wantErr {
 				t.Errorf("repository.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -273,42 +283,12 @@ func Test_repository_Update(t *testing.T) {
 	}
 }
 
-func FuzzRepository_ExamCompanyPassword(f *testing.F) {
-	createRandomCompanyToDB(100)
-
-	for i := 0; i < 100; i++ {
-		f.Add("test"+strconv.Itoa(i), strconv.Itoa(i+1), true)
-	}
-
-	for i := 0; i < 100; i++ {
-		f.Add("test"+strconv.Itoa(i), strconv.Itoa(i+100), false)
-	}
-
-	for i := 0; i < 100; i++ {
-		f.Add("test"+strconv.Itoa(i+1000), strconv.Itoa(i), false)
-	}
-
-	f.Fuzz(func(t *testing.T, name, pwd string, pass bool) {
-		r := repository{db: testingDB}
-
-		result, err := r.ExamCompanyPassword(context.Background(), name, pwd)
-
-		if pass != result {
-			t.Errorf("repository.ExamCompanyPassword() error = %v, want %v", err, pass)
-		}
-
-		if !pass && err == nil {
-			t.Errorf("repository.ExamCompanyPassword() error not be nil, but %v", err)
-		}
-	})
-}
-
 func createRandomCompanyToDB(numbers int) {
 	for i := 0; i < numbers; i++ {
 		company := &model.Company{
-			ID:       int64(i),
-			Name:     "test" + strconv.Itoa(i),
-			Password: strconv.Itoa(i + 1),
+			ID:        int64(i),
+			Name:      "test" + strconv.Itoa(i),
+			CreatedBy: strconv.Itoa(i + 1),
 		}
 		testingDB.Create(company)
 	}
