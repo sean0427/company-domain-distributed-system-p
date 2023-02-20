@@ -11,9 +11,9 @@ type Company struct {
 	Address string `json:"address"`
 	Contact string `json:"contact"` // TODO: from user domain
 
-	CreatedBy string `json:"createdBy"`
-	UpdatedBy string `json:"updatedBy"`
+	CreatedBy string    `json:"created_by"`
+	Created   time.Time `json:"created"`
 
-	Created time.Time `json:"created"`
-	Updated time.Time `json:"updated"`
+	UpdatedBy string    `json:"updated_by"`
+	Updated   time.Time `json:"updated"`
 }

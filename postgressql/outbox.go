@@ -1,3 +1,4 @@
+// TODO might be move to util repository
 package postgressql
 
 import (
@@ -8,8 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type outboxMsg struct {
-	query string
+type outbox struct {
+	Query string `json:"query"`
 	//TODO
 }
 
@@ -24,7 +25,7 @@ func TransactionWithOutboxMsg(ctx context.Context, db *gorm.DB, data *model.Comp
 		return err
 	}
 
-	outbox := outboxMsg{query: msg}
+	outbox := outbox{Query: msg}
 
 	err = db.WithContext(ctx).Transaction(func(_tx *gorm.DB) error {
 		err := queryFunc(_tx)
