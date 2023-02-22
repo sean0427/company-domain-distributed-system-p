@@ -10,6 +10,8 @@ import (
 	"github.com/sean0427/company-domain-distributed-system-p/model"
 )
 
+const topicName = "company"
+
 type repository struct {
 	db *gorm.DB
 }
@@ -61,12 +63,9 @@ func (r *repository) Create(ctx context.Context, params *api_model.CreateCompany
 		CreatedBy: user,
 	}
 
-	err := TransactionWithOutboxMsg(ctx, r.db, &company, func(tx *gorm.DB) error {
+	err := TransactionWithOutboxMsg(ctx, r.db, &company, topicName, func(tx *gorm.DB) (int64, error) {
 		result := tx.Model(&company).Create(&company)
-		if result.Error != nil {
-			return result.Error
-		}
-		return nil
+		return company.ID, result.Error
 	})
 
 	if err != nil {
@@ -86,15 +85,15 @@ func (r *repository) Update(ctx context.Context, id int64, params *api_model.Upd
 		Contact:   params.Contact,
 		UpdatedBy: user,
 	}
-	err := TransactionWithOutboxMsg(ctx, r.db, &company, func(tx *gorm.DB) error {
+	err := TransactionWithOutboxMsg(ctx, r.db, &company, topicName, func(tx *gorm.DB) (int64, error) {
 		result := tx.Model(&company).Where("id = ?", params.ID).Save(&company)
 		if result.Error != nil {
-			return result.Error
+			return 0, result.Error
 		}
 		if result.RowsAffected == 0 {
-			return errors.New("not found")
+			return 0, errors.New("not found")
 		}
-		return nil
+		return params.ID, nil
 	})
 	if err != nil {
 		return nil, err

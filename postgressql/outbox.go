@@ -5,13 +5,13 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/sean0427/company-domain-distributed-system-p/model"
 	"gorm.io/gorm"
 )
 
 type outbox struct {
-	Query string `json:"query"`
-	//TODO
+	Query    string `json:"query"`
+	Topic    string `json:"topic"`
+	EntityId int64  `json:"entity_id"`
 }
 
 func getOutboxQuery(data interface{}) (string, error) {
@@ -19,16 +19,22 @@ func getOutboxQuery(data interface{}) (string, error) {
 	return string(b), err
 }
 
-func TransactionWithOutboxMsg(ctx context.Context, db *gorm.DB, data *model.Company, queryFunc func(tx *gorm.DB) error) error {
-	msg, err := getOutboxQuery(data)
+func TransactionWithOutboxMsg[T any](ctx context.Context,
+	db *gorm.DB, data *T,
+	topic string,
+	queryFunc func(tx *gorm.DB) (int64, error)) error {
+	msg, err := getOutboxQuery(&data)
 	if err != nil {
 		return err
 	}
 
-	outbox := outbox{Query: msg}
-
 	err = db.WithContext(ctx).Transaction(func(_tx *gorm.DB) error {
-		err := queryFunc(_tx)
+		id, err := queryFunc(_tx)
+		outbox := outbox{
+			EntityId: id,
+			Query:    msg,
+			Topic:    topic}
+
 		if err != nil {
 			return err
 		}
