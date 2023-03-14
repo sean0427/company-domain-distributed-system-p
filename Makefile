@@ -7,5 +7,5 @@ protoco_gen:
 	protoc proto/*.proto --go_out=${PWD} --go-grpc_out=${PWD} --experimental_allow_proto3_optional
 
 build_push_to_kind:
-	docker build . -t compnay-domain
-	kind load docker-image compnay-domain --name micro-service
+	docker build . -t company-domain
+	kind load docker-image company-domain --name micro-service
