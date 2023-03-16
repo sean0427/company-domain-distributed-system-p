@@ -157,13 +157,13 @@ func CtxKey(s string) {
 func Test_repository_Create(t *testing.T) {
 	tests := []struct {
 		name    string
-		params  *api_model.CreateCompanyParams
+		params  *api_model.UpdateCompanyParams
 		want    int64
 		wantErr bool
 	}{
 		{
 			name: "happy",
-			params: &api_model.CreateCompanyParams{
+			params: &api_model.UpdateCompanyParams{
 				Name:    "test",
 				Email:   "test@test.com",
 				Contact: "featea",
@@ -173,7 +173,7 @@ func Test_repository_Create(t *testing.T) {
 		},
 		{
 			name: "error",
-			params: &api_model.CreateCompanyParams{
+			params: &api_model.UpdateCompanyParams{
 				Name: "",
 			},
 			want:    0,

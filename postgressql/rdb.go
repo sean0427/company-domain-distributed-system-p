@@ -10,6 +10,8 @@ import (
 	"github.com/sean0427/company-domain-distributed-system-p/model"
 )
 
+const topicName = "company"
+
 type repository struct {
 	db *gorm.DB
 }
@@ -50,7 +52,7 @@ func (r *repository) GetByID(ctx context.Context, id int64) (*model.Company, err
 	return &company, result.Error
 }
 
-func (r *repository) Create(ctx context.Context, params *api_model.CreateCompanyParams) (int64, error) {
+func (r *repository) Create(ctx context.Context, params *api_model.UpdateCompanyParams) (int64, error) {
 	user, _ := getUserFromContext(ctx)
 	company := model.Company{
 		Name:      params.Name,
@@ -61,12 +63,9 @@ func (r *repository) Create(ctx context.Context, params *api_model.CreateCompany
 		CreatedBy: user,
 	}
 
-	err := TransactionWithOutboxMsg(ctx, r.db, &company, func(tx *gorm.DB) error {
+	err := TransactionWithOutboxMsg(ctx, r.db, &company, topicName, func(tx *gorm.DB) (int64, error) {
 		result := tx.Model(&company).Create(&company)
-		if result.Error != nil {
-			return result.Error
-		}
-		return nil
+		return company.ID, result.Error
 	})
 
 	if err != nil {
@@ -86,15 +85,18 @@ func (r *repository) Update(ctx context.Context, id int64, params *api_model.Upd
 		Contact:   params.Contact,
 		UpdatedBy: user,
 	}
-	err := TransactionWithOutboxMsg(ctx, r.db, &company, func(tx *gorm.DB) error {
+	err := TransactionWithOutboxMsg(ctx, r.db, &company, topicName, func(tx *gorm.DB) (int64, error) {
 		result := tx.Model(&company).Where("id = ?", params.ID).Save(&company)
 		if result.Error != nil {
-			return result.Error
+			return 0, result.Error
 		}
 		if result.RowsAffected == 0 {
-			return errors.New("not found")
+			return 0, errors.New("not found")
 		}
-		return nil
+
+		// workaound fix for gereric
+		company.ID = params.ID
+		return company.ID, nil
 	})
 	if err != nil {
 		return nil, err

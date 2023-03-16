@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CompanyHandlerClient interface {
-	ListCompanies(ctx context.Context, in *CompanyRequest, opts ...grpc.CallOption) (*ListCompanyReply, error)
+	ListCompanies(ctx context.Context, in *CompanyQuery, opts ...grpc.CallOption) (*ListCompanyReply, error)
 	GetCompany(ctx context.Context, in *CompanyRequest, opts ...grpc.CallOption) (*CompanyReply, error)
 	CreateCompany(ctx context.Context, in *CompanyRequest, opts ...grpc.CallOption) (*MsgReply, error)
 	UpdateCompany(ctx context.Context, in *CompanyRequest, opts ...grpc.CallOption) (*CompanyReply, error)
@@ -37,7 +37,7 @@ func NewCompanyHandlerClient(cc grpc.ClientConnInterface) CompanyHandlerClient {
 	return &companyHandlerClient{cc}
 }
 
-func (c *companyHandlerClient) ListCompanies(ctx context.Context, in *CompanyRequest, opts ...grpc.CallOption) (*ListCompanyReply, error) {
+func (c *companyHandlerClient) ListCompanies(ctx context.Context, in *CompanyQuery, opts ...grpc.CallOption) (*ListCompanyReply, error) {
 	out := new(ListCompanyReply)
 	err := c.cc.Invoke(ctx, "/CompanyHandler/ListCompanies", in, out, opts...)
 	if err != nil {
@@ -86,7 +86,7 @@ func (c *companyHandlerClient) DeleteCompany(ctx context.Context, in *CompanyReq
 // All implementations must embed UnimplementedCompanyHandlerServer
 // for forward compatibility
 type CompanyHandlerServer interface {
-	ListCompanies(context.Context, *CompanyRequest) (*ListCompanyReply, error)
+	ListCompanies(context.Context, *CompanyQuery) (*ListCompanyReply, error)
 	GetCompany(context.Context, *CompanyRequest) (*CompanyReply, error)
 	CreateCompany(context.Context, *CompanyRequest) (*MsgReply, error)
 	UpdateCompany(context.Context, *CompanyRequest) (*CompanyReply, error)
@@ -98,7 +98,7 @@ type CompanyHandlerServer interface {
 type UnimplementedCompanyHandlerServer struct {
 }
 
-func (UnimplementedCompanyHandlerServer) ListCompanies(context.Context, *CompanyRequest) (*ListCompanyReply, error) {
+func (UnimplementedCompanyHandlerServer) ListCompanies(context.Context, *CompanyQuery) (*ListCompanyReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListCompanies not implemented")
 }
 func (UnimplementedCompanyHandlerServer) GetCompany(context.Context, *CompanyRequest) (*CompanyReply, error) {
@@ -127,7 +127,7 @@ func RegisterCompanyHandlerServer(s grpc.ServiceRegistrar, srv CompanyHandlerSer
 }
 
 func _CompanyHandler_ListCompanies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CompanyRequest)
+	in := new(CompanyQuery)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func _CompanyHandler_ListCompanies_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/CompanyHandler/ListCompanies",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CompanyHandlerServer).ListCompanies(ctx, req.(*CompanyRequest))
+		return srv.(CompanyHandlerServer).ListCompanies(ctx, req.(*CompanyQuery))
 	}
 	return interceptor(ctx, in, info, handler)
 }
