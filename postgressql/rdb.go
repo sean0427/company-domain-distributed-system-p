@@ -8,6 +8,8 @@ import (
 
 	"github.com/sean0427/company-domain-distributed-system-p/api_model"
 	"github.com/sean0427/company-domain-distributed-system-p/model"
+
+	tool "github.com/sean0427/tool-distributed-system-p/outbox-transaction"
 )
 
 const topicName = "company"
@@ -63,7 +65,7 @@ func (r *repository) Create(ctx context.Context, params *api_model.UpdateCompany
 		CreatedBy: user,
 	}
 
-	err := TransactionWithOutboxMsg(ctx, r.db, &company, topicName, func(tx *gorm.DB) (int64, error) {
+	err := tool.TransactionWithOutboxMsg(ctx, r.db, &company, topicName, func(tx *gorm.DB) (int64, error) {
 		result := tx.Model(&company).Create(&company)
 		return company.ID, result.Error
 	})
@@ -85,7 +87,7 @@ func (r *repository) Update(ctx context.Context, id int64, params *api_model.Upd
 		Contact:   params.Contact,
 		UpdatedBy: user,
 	}
-	err := TransactionWithOutboxMsg(ctx, r.db, &company, topicName, func(tx *gorm.DB) (int64, error) {
+	err := tool.TransactionWithOutboxMsg(ctx, r.db, &company, topicName, func(tx *gorm.DB) (int64, error) {
 		result := tx.Model(&company).Where("id = ?", params.ID).Save(&company)
 		if result.Error != nil {
 			return 0, result.Error
