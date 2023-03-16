@@ -10,7 +10,7 @@ import (
 type repository interface {
 	Get(ctx context.Context, params *api_model.GetCompaniesParams) ([]*model.Company, error)
 	GetByID(ctx context.Context, id int64) (*model.Company, error)
-	Create(ctx context.Context, company *api_model.CreateCompanyParams) (int64, error)
+	Create(ctx context.Context, company *api_model.UpdateCompanyParams) (int64, error)
 	Update(ctx context.Context, id int64, company *api_model.UpdateCompanyParams) (*model.Company, error)
 	Delete(ctx context.Context, id int64) error
 }
@@ -33,7 +33,7 @@ func (s *CompanyService) GetByID(ctx context.Context, id int64) (*model.Company,
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *CompanyService) Create(ctx context.Context, params *api_model.CreateCompanyParams) (int64, error) {
+func (s *CompanyService) Create(ctx context.Context, params *api_model.UpdateCompanyParams) (int64, error) {
 	return s.repo.Create(ctx, params)
 }
 

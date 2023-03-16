@@ -37,7 +37,7 @@ func (m *Mockrepository) EXPECT() *MockrepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *Mockrepository) Create(ctx context.Context, company *api_model.CreateCompanyParams) (int64, error) {
+func (m *Mockrepository) Create(ctx context.Context, company *api_model.UpdateCompanyParams) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, company)
 	ret0, _ := ret[0].(int64)

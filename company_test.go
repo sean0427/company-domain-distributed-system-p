@@ -22,7 +22,7 @@ func (r *mockRepo) GetByID(ctx context.Context, id int64) (*model.Company, error
 		Name: strconv.Itoa(int(id))}, nil
 }
 
-func (r *mockRepo) Create(ctx context.Context, params *api_model.CreateCompanyParams) (int64, error) {
+func (r *mockRepo) Create(ctx context.Context, params *api_model.UpdateCompanyParams) (int64, error) {
 	id, err := strconv.Atoi(params.Name)
 	return int64(id), err
 }
@@ -85,7 +85,7 @@ func TestCompanyService_Create(t *testing.T) {
 	t.Run("happy", func(t *testing.T) {
 		// workaound name as id
 		const testId int64 = 123
-		company := &api_model.CreateCompanyParams{
+		company := &api_model.UpdateCompanyParams{
 			Name: strconv.Itoa(int(testId)),
 		}
 

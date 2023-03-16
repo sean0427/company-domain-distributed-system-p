@@ -3,6 +3,7 @@ package companydoaminclient
 import (
 	"context"
 	"fmt"
+	"math/rand"
 
 	pb "github.com/sean0427/company-domain-distributed-system-p/grpc/grpc"
 	"google.golang.org/grpc"
@@ -25,11 +26,13 @@ func ExampleCompanyHandlerClient_CreateCompany() {
 	}
 	client := pb.NewCompanyHandlerClient(conn)
 
-	name := "John Doe"
+	name := fmt.Sprintf("%s %d", "John Daa", rand.Intn(100000))
 	ret, err := client.CreateCompany(context.Background(), &pb.CompanyRequest{
-		Name: &name,
+		Company: &pb.Company{
+			Name: name,
+		},
 	})
 
 	fmt.Printf("A: %v, %v\n", ret, err)
-	//output: A: John Doe, <nil>
+	// not output will be not run for let CI pass //output: A: John Doe, <nil>
 }

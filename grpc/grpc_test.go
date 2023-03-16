@@ -15,7 +15,7 @@ import (
 
 var testListCompanyCasese = []struct {
 	name              string
-	request           *pb.CompanyRequest
+	request           *pb.CompanyQuery
 	expectTime        int
 	returnedCompanies []*model.Company
 	returnedErr       error
@@ -23,7 +23,7 @@ var testListCompanyCasese = []struct {
 }{
 	{
 		name: "happy",
-		request: &pb.CompanyRequest{
+		request: &pb.CompanyQuery{
 			Name: api_model.StringToPointer("any"),
 		},
 		expectTime: 1,
@@ -42,7 +42,7 @@ var testListCompanyCasese = []struct {
 	},
 	{
 		name: "errpr - not found",
-		request: &pb.CompanyRequest{
+		request: &pb.CompanyQuery{
 			Name: api_model.StringToPointer("any"),
 		},
 		expectTime:        1,
@@ -51,7 +51,7 @@ var testListCompanyCasese = []struct {
 		wantErr:           true,
 	}, {
 		name:              "error - no name",
-		request:           &pb.CompanyRequest{},
+		request:           &pb.CompanyQuery{},
 		expectTime:        0,
 		returnedCompanies: nil,
 		returnedErr:       nil,
@@ -59,7 +59,7 @@ var testListCompanyCasese = []struct {
 	},
 	{
 		name: "error - servce return err",
-		request: &pb.CompanyRequest{
+		request: &pb.CompanyQuery{
 			Name: api_model.StringToPointer("any"),
 		},
 		expectTime:        1,
@@ -274,8 +274,10 @@ var testUpdateCompanyCase = []struct {
 	{
 		name: "happy",
 		request: &pb.CompanyRequest{
-			Id:   api_model.Int64ToPointer(11),
-			Name: api_model.StringToPointer("tes"),
+			Id: api_model.Int64ToPointer(11),
+			Company: &pb.Company{
+				Name: "any",
+			},
 		},
 		expectTime: 1,
 		returnedCompany: &model.Company{
@@ -288,7 +290,8 @@ var testUpdateCompanyCase = []struct {
 	{
 		name: "error - not found",
 		request: &pb.CompanyRequest{
-			Id: api_model.Int64ToPointer(2211),
+			Id:      api_model.Int64ToPointer(2211),
+			Company: &pb.Company{},
 		},
 		expectTime:      1,
 		returnedCompany: nil,
@@ -306,7 +309,8 @@ var testUpdateCompanyCase = []struct {
 	{
 		name: "error - servce return err",
 		request: &pb.CompanyRequest{
-			Id: api_model.Int64ToPointer(11),
+			Id:      api_model.Int64ToPointer(11),
+			Company: &pb.Company{},
 		},
 		expectTime:      1,
 		returnedCompany: nil,
@@ -367,7 +371,9 @@ var testCreateCompanyCase = []struct {
 	{
 		name: "happy",
 		request: &pb.CompanyRequest{
-			Name: api_model.StringToPointer("any"),
+			Company: &pb.Company{
+				Name: "any",
+			},
 		},
 		expectTime:  1,
 		returnedID:  1,
@@ -393,7 +399,9 @@ var testCreateCompanyCase = []struct {
 	{
 		name: "error - create failed",
 		request: &pb.CompanyRequest{
-			Name: api_model.StringToPointer("any"),
+			Company: &pb.Company{
+				Name: "any",
+			},
 		},
 		expectTime:  1,
 		returnedErr: errors.New("any"),
@@ -406,8 +414,8 @@ func TestGrpcService_CreateCompany(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			companyMatch := gomock.Any()
-			if c.request != nil && c.request.Name != nil {
-				companyMatch = gomock.Eq(&api_model.CreateCompanyParams{Name: *c.request.Name})
+			if c.request != nil && c.request.Company != nil {
+				companyMatch = gomock.Eq(&api_model.UpdateCompanyParams{Name: c.request.Company.Name})
 			}
 
 			m := mock.NewMockservice(ctrl)

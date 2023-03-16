@@ -24,12 +24,12 @@ type GrpcService struct {
 type service interface {
 	Get(context.Context, *api_model.GetCompaniesParams) ([]*model.Company, error)
 	GetByID(context.Context, int64) (*model.Company, error)
-	Create(context.Context, *api_model.CreateCompanyParams) (int64, error)
+	Create(context.Context, *api_model.UpdateCompanyParams) (int64, error)
 	Update(context.Context, int64, *api_model.UpdateCompanyParams) (*model.Company, error)
 	Delete(context.Context, int64) error
 }
 
-func (g *GrpcService) ListCompanies(ctx context.Context, req *pb.CompanyRequest) (*pb.ListCompanyReply, error) {
+func (g *GrpcService) ListCompanies(ctx context.Context, req *pb.CompanyQuery) (*pb.ListCompanyReply, error) {
 	if req.Name == nil || *req.Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "input name should not be nil")
 	}
@@ -72,17 +72,15 @@ func (g *GrpcService) GetCompany(ctx context.Context, req *pb.CompanyRequest) (*
 }
 
 func (g *GrpcService) CreateCompany(ctx context.Context, req *pb.CompanyRequest) (*pb.MsgReply, error) {
-	if req.Id != nil {
-		return nil, status.Error(codes.InvalidArgument, "input id should be nil")
-	}
-	if req.Name == nil || *req.Name == "" {
+	if req.Company == nil || (*req.Company).Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "input name should not be nil")
 	}
 
-	company := &api_model.CreateCompanyParams{}
-	if req.Name != nil {
-		company.Name = *req.Name
+	if req.Id != nil {
+		return nil, status.Error(codes.InvalidArgument, "input id should be nil")
 	}
+
+	company := GrpcCompanyToAPICompany(req.GetCompany())
 
 	res, err := g.service.Create(ctx, company)
 	if err != nil {
@@ -97,11 +95,11 @@ func (g *GrpcService) UpdateCompany(ctx context.Context, req *pb.CompanyRequest)
 		return nil, status.Error(codes.InvalidArgument, "input id should not be nil")
 	}
 
-	company := &api_model.UpdateCompanyParams{}
-	// TODO: other pramas
-	if req.Name != nil {
-		company.Name = *req.Name
+	if req.Company == nil {
+		return nil, status.Error(codes.InvalidArgument, "input company should not be nil")
 	}
+
+	company := GrpcCompanyToAPICompany(req.GetCompany())
 
 	res, err := g.service.Update(ctx, *req.Id, company)
 	if err != nil {

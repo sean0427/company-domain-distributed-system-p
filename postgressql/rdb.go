@@ -52,7 +52,7 @@ func (r *repository) GetByID(ctx context.Context, id int64) (*model.Company, err
 	return &company, result.Error
 }
 
-func (r *repository) Create(ctx context.Context, params *api_model.CreateCompanyParams) (int64, error) {
+func (r *repository) Create(ctx context.Context, params *api_model.UpdateCompanyParams) (int64, error) {
 	user, _ := getUserFromContext(ctx)
 	company := model.Company{
 		Name:      params.Name,
@@ -93,7 +93,10 @@ func (r *repository) Update(ctx context.Context, id int64, params *api_model.Upd
 		if result.RowsAffected == 0 {
 			return 0, errors.New("not found")
 		}
-		return params.ID, nil
+
+		// workaound fix for gereric
+		company.ID = params.ID
+		return company.ID, nil
 	})
 	if err != nil {
 		return nil, err

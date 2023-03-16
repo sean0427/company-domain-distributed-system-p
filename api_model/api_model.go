@@ -4,13 +4,6 @@ type GetCompaniesParams struct {
 	Name *string
 }
 
-type CreateCompanyParams struct {
-	Name    string
-	Email   string
-	Address string
-	Contact string
-}
-
 type UpdateCompanyParams struct {
 	ID      int64
 	Name    string
