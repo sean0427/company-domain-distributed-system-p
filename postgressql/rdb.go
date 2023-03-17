@@ -110,13 +110,15 @@ func (r *repository) Update(ctx context.Context, id int64, params *api_model.Upd
 func (r *repository) Delete(ctx context.Context, id int64) error {
 	tx := r.db.WithContext(ctx)
 
-	result := tx.Delete(&model.Company{}, "id = ?", id)
-	if result.Error != nil {
-		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return errors.New("not found")
-	}
-
-	return nil
+	return tool.TransactionDeleteWithOutboxMsg(ctx, tx, topicName, id,
+		func(tx *gorm.DB) error {
+			result := tx.Delete(&model.Company{}, "id = ?", id)
+			if result.Error != nil {
+				return result.Error
+			}
+			if result.RowsAffected == 0 {
+				return errors.New("not found")
+			}
+			return nil
+		})
 }
